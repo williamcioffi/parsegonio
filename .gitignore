@@ -1,0 +1,7 @@
+# system files
+.DS_Store
+.Rapp.history
+
+# data files
+allgonio_log.txt
+gonio_DSA.txt
