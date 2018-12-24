@@ -8,12 +8,12 @@ h2 <- ""	# this is the ptt
 h3 <- " 75 31 A 2"
 h4 <- ""	# this is the date
 h5 <- ""    # this is the time
-h6 <- " 37.075  285.342  0.000 401677432"
+h6 <- " 34.716  283.328  0.000 401677432"
 
 # footer
 f1 <- "" 	# this is the number of messages
 f2 <- "msgs 000>-120dB  Best:  -126  Freq:  677432.3  IQ : 66" # first line
-f3 <- "Lat1: 37.075N  Lon1:  74.658W  Lat2: 44.998N  Lon2:  34.063W" # second line
+f3 <- "Lat1: 34.716N  Lon1:  76.672W  Lat2: 34.716N  Lon2:  76.672W" # second line
 
 # read in raw goniometer file and separate the favorited NPRF from the NPR.
 g <- readLines(gfile)
