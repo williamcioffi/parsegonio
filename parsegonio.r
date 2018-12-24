@@ -1,10 +1,7 @@
 # parse the raw goniometer files
 
-# this is the path to the raw goniometer file and ptt key file
-gfile <- "allgonio_log.txt"
-pttkey_file <- "pttkey.csv"
-
-# constants for the fake DSA file
+parsegonio <- function(gfile, pttkey_file) {
+# constants for the fake prv file
 # header
 h1 <- "03126"
 h2 <- ""	# this is the ptt
@@ -24,21 +21,51 @@ g_nprf <- g[grep("NPRF", g)]
 g_npr <- g[grep("NPR,", g)]
 
 # make new files out of these greped vectors
-nprf_file <- tempfile()
-npr_file <- tempfile()
-writeLines(g_nprf, nprf_file)
-writeLines(g_npr, npr_file)
+if(length(g_nprf) == 0 & length(g_npr) == 0) stop("you didn't give me any goniometer messages!")
 
-# load new files in as CSVs
-nprf <- read.csv(nprf_file, header = FALSE, sep = ',')
-npr <- read.csv(npr_file, header = FALSE, sep = ',')
+allg <- data.frame(
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character(),
+character()
+)
 
-# add dummy columns for the saved average strength and average bearing columns for NPR (this only works on NPRF)
-npr_withcols <- data.frame(npr[, 1:12], rep(NA, nrow(npr)), npr[, 13], rep(NA, nrow(npr)), npr[, 14:ncol(npr)])
-names(npr_withcols) <- paste0("V", 1:20)
+names(allg) <- paste0("V", 1:20)
 
-# make a new data table with both NPR and NPRF and the columns lining up
-allg <- rbind(npr_withcols, nprf)
+if(length(g_nprf) != 0) {
+	nprf_file <- tempfile()
+	writeLines(g_nprf, nprf_file)
+	nprf <- read.table(nprf_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
+	allg <- rbind(allg, nprf)
+}
+
+if(length(g_npr) != 0) {
+	npr_file <- tempfile()
+	writeLines(g_npr, npr_file)
+	npr <- read.table(npr_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
+	# add dummy columns for the saved average strength and average bearing columns for NPR (this only works on NPRF)
+	npr_withcols <- data.frame(npr[, 1:12], rep(NA, nrow(npr)), npr[, 13], rep(NA, nrow(npr)), npr[, 14:ncol(npr)])
+	names(npr_withcols) <- paste0("V", 1:20)
+	allg <- rbind(allg, npr_withcols)
+}
+
+if(nrow(allg) == 0) stop("i don't think you have anything to work with there...")
 
 # remove excess words from recieved date time
 rec_date <- as.character(allg$V1)
@@ -57,7 +84,7 @@ allg$V20 <- msg_formatted
 allg[, 'asterix'] <- msg_asterix
 
 # read in the pttkey
-pttkey <- read.table(pttkey_file, header = TRUE, sep = ',')
+pttkey <- read.table(pttkey_file, header = TRUE, sep = ',', stringsAsFactors = FALSE)
 desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
 
 # look for just those hex codes
@@ -111,4 +138,7 @@ setTxtProgressBar(pb, i/length(foundhexes))
 }
 close(pb)
 
-cat(output, file = "gonio_DSA.txt")
+if(length(output) == 0) warning("i don't think you found any matching hex...")
+
+output
+}
