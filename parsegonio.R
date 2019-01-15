@@ -67,11 +67,27 @@ if(length(g_npr) != 0) {
 
 if(nrow(allg) == 0) stop("i don't think you have anything to work with there...")
 
-# remove excess words from recieved date time
-rec_date <- as.character(allg$V1)
-rec_date_split <- strsplit(rec_date, split = " ")
-rec_date_formatted <- sapply(rec_date_split, function(l) paste(l[1], l[2]))
+# format date
+rec_date_tmp <- paste(
+	allg$V3, 				# this code might break in the year 3000?
+	sprintf("%02d", allg$V4), 
+	sprintf("%02d", allg$V5),
+	sep = '-'
+)
 
+rec_date_tmp <- as.character(as.POSIXct(rec_date_tmp, format = "%y-%m-%d", tz = "UTC"))
+
+rec_time_tmp <- paste(
+	sprintf("%02d", allg$V6), 
+	sprintf("%02d", allg$V7), 
+	sprintf("%02d", allg$V8),
+	sep = ":"
+)
+
+# final formatted date and time
+rec_date_formatted <- paste(rec_date_tmp, rec_time_tmp)allg$V1 <- rec_date_formatted
+
+# save back into the dataframe
 allg$V1 <- rec_date_formatted
 
 # separate the byte after the asterix
