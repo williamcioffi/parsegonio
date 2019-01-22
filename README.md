@@ -48,7 +48,7 @@ h6 <- " 34.716  283.328  0.000 401677432"
 
 Once you have the simulated prv output you can just drag it into DAP processor. It helps to have preloaded a workspace with wch files as well as DAP will use the tag settings during decoding, though you can still get something even without them.
 
-![](dap_ex.png)
+![](docs/images/dap_ex.png)
 
 `csv` files of various datastreams can now be exported. Some of these for instance, `*-Locations.csv`, `*-Argos.csv` will be complete junk. Others will mostly make sense, but be sure to ignore anything to do with doppler positions or satellite passes.
 
@@ -56,12 +56,9 @@ Once you have the simulated prv output you can just drag it into DAP processor. 
 
 If you are opening any `csv` files in excel and if your hex has an E somewhere in the middle and all the other digits are numbers (not letters) then excel will interpret it as scientific notation. For example `12345E2` will be converted into `12345 x 10^2` by excel. This is quite annoying and will happen every time you open the file. It’ll look something like this:
 
-|PTT    |HEX      |DEPLOYID|
-|------:|--------:|:-------|
-| 171171| 1.23E+06|test1   |
+![](docs/images/badhex.png)
 
 The best solution is don’t use excel because it is a terrible `csv` editor. But many folks are most comfortable with editing `csv` files in excel so in the past I’ve added a notes column that starts with text so the real hex can be recovered if someone accidentally edits it in excel and saves the result.
 
-|PTT    |HEX      |DEPLOYID| NOTES        |
-|------:|--------:|:-------|:-------------|
-| 171171| 1.23E+06|test1   |Hex is 12345E2|
+![](docs/images/savedhex.png)
+
