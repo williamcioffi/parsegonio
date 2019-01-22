@@ -85,7 +85,8 @@ rec_time_tmp <- paste(
 )
 
 # final formatted date and time
-rec_date_formatted <- paste(rec_date_tmp, rec_time_tmp)allg$V1 <- rec_date_formatted
+rec_date_formatted <- paste(rec_date_tmp, rec_time_tmp)
+allg$V1 <- rec_date_formatted
 
 # save back into the dataframe
 allg$V1 <- rec_date_formatted
