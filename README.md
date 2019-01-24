@@ -50,7 +50,7 @@ Once you have the simulated prv output you can just drag it into DAP processor. 
 
 ![](docs/images/dap_ex.png)
 
-`csv` files of various datastreams can now be exported. Some of these for instance, `*-Locations.csv`, `*-Argos.csv` will be complete junk. Others will mostly make sense, but be sure to ignore anything to do with doppler positions or satellite passes.
+`csv` files of various datastreams can now be exported. Some of these for instance, `*-Locations.csv`, `*-Argos.csv` will be complete junk. Others will mostly make sense, but be sure to ignore anything to do with Doppler positions or satellite passes.
 
 ## One word of caution about ptts and csvs
 
