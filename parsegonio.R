@@ -1,6 +1,6 @@
 # parse the raw goniometer files
 
-parsegonio <- function(gfile, pttkey_file) {
+parsegonio <- function(gfile, pttkey_file, dsa_output = TRUE) {
 # constants for the fake prv file
 # header
 h1 <- "03126"
@@ -106,54 +106,60 @@ desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
 
 # look for just those hex codes
 subg <- allg[which(allg$V9 %in% desehex), ]
-foundhexes <- unique(subg$V9)
-foundptts <- pttkey$PTT[match(foundhexes, pttkey$HEX)]
-output <- ""
-	
-# go through each found hex and bundle up all the messages
-pb <- txtProgressBar(style = 3)
-for(i in 1:length(foundhexes)) {
-setTxtProgressBar(pb, i/length(foundhexes))
-	dese <- which(subg$V9 == foundhexes[i])
-	header <- paste(h1, foundptts[i], h3, subg$V1[dese[1]], h6)
-	
-	date <- subg[dese, ]$V1
-	msgs <- subg[dese, ]$V20
-	msgs <- as.character(msgs)
-	msgs <- split(msgs, 1:length(msgs))
-	
-	# split up into bytes dropping first byte
-	msgs <- lapply(msgs, function(l) {
-		lprime <- substring(l, seq(1, nchar(l), by = 2), seq(2, nchar(l), by = 2))
-		lprime[-1]
-	})
-	
-	# convert from hex to decimal and add 1 leader zero
-	msgs <- lapply(msgs, as.hexmode)
-	msgs <- lapply(msgs, as.integer)
-	msgs <- lapply(msgs, function(l) {
-		dese <- which(nchar(l) == 1)
-		l[dese] <- paste0("0", l[dese])
-		l
-	})
-	
-	output <- paste0(output, header, "\n")
 
-	for(p in 1:length(dese)) {
-		output <- paste0(output, date[p], " 1")
-		curmsg <- msgs[[p]]
-		msgseq <- rep(1:ceiling(length(curmsg)/4), each = 4)
-		msgseq <- msgseq[1:length(curmsg)]
-		u_msgseq <- unique(msgseq)
-		
-		for(q in 1:length(u_msgseq)) {
-			dose <- which(msgseq == u_msgseq[q])
-			output <- paste0(output, "\t", paste(curmsg[dose], collapse = "\t"), "\n")
-		}
-		
-	}
+if(dsa_output) {
+  # set up vectors to make dsa
+  foundhexes <- unique(subg$V9)
+  foundptts <- pttkey$PTT[match(foundhexes, pttkey$HEX)]
+  output <- ""
+  	
+  # go through each found hex and bundle up all the messages
+  pb <- txtProgressBar(style = 3)
+  for(i in 1:length(foundhexes)) {
+  setTxtProgressBar(pb, i/length(foundhexes))
+  	dese <- which(subg$V9 == foundhexes[i])
+  	header <- paste(h1, foundptts[i], h3, subg$V1[dese[1]], h6)
+  	
+  	date <- subg[dese, ]$V1
+  	msgs <- subg[dese, ]$V20
+  	msgs <- as.character(msgs)
+  	msgs <- split(msgs, 1:length(msgs))
+  	
+  	# split up into bytes dropping first byte
+  	msgs <- lapply(msgs, function(l) {
+  		lprime <- substring(l, seq(1, nchar(l), by = 2), seq(2, nchar(l), by = 2))
+  		lprime[-1]
+  	})
+  	
+  	# convert from hex to decimal and add 1 leader zero
+  	msgs <- lapply(msgs, as.hexmode)
+  	msgs <- lapply(msgs, as.integer)
+  	msgs <- lapply(msgs, function(l) {
+  		dese <- which(nchar(l) == 1)
+  		l[dese] <- paste0("0", l[dese])
+  		l
+  	})
+  	
+  	output <- paste0(output, header, "\n")
+  
+  	for(p in 1:length(dese)) {
+  		output <- paste0(output, date[p], " 1")
+  		curmsg <- msgs[[p]]
+  		msgseq <- rep(1:ceiling(length(curmsg)/4), each = 4)
+  		msgseq <- msgseq[1:length(curmsg)]
+  		u_msgseq <- unique(msgseq)
+  		
+  		for(q in 1:length(u_msgseq)) {
+  			dose <- which(msgseq == u_msgseq[q])
+  			output <- paste0(output, "\t", paste(curmsg[dose], collapse = "\t"), "\n")
+  		}
+  		
+  	}
+  }
+  close(pb)
+} else {
+  output <- allg
 }
-close(pb)
 
 if(length(output) == 0) warning("i don't think you found any matching hex...")
 
