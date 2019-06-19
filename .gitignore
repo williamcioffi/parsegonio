@@ -1,6 +1,7 @@
 # system files
 .DS_Store
 .Rapp.history
+.Rhistory
 
 # data files
 
