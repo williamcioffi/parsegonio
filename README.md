@@ -1,4 +1,6 @@
 # parsegonio
+[![DOI](https://zenodo.org/badge/122348759.svg)](https://zenodo.org/badge/latestdoi/122348759)
+
 * A hack to parse the [Argos Goniometer](https://www.clsamerica.com/argos-goniometer) log data into a `prv` file readable by Argos Message Decoder / DAP Processor or WC portal.
 
 * **warning:** No error handling! Further testing required! Use with caution. This is still under active dev and may change without backwards compatibility. 
@@ -13,7 +15,7 @@
 
 * For now, please cite as:
 
-Cioffi WR (2020). parsegonio: parse Argos Goniometer log data and convert into prv. R code version 0.1.0. https://github.com/williamcioffi/parsegonio. (doi:TBD).
+Cioffi WR (2020). parsegonio: parse Argos Goniometer log data and convert into prv. R code version 0.1.0. https://github.com/williamcioffi/parsegonio. (doi:10.5281/zenodo.3647697).
 
 ## Quick start
 
