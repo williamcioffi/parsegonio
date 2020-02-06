@@ -11,7 +11,7 @@
 
 * Report any bugs to the [issues](https://github.com/williamcioffi/parsegonio/issues) page. 
 
-* If you're interested in contributing, start take a peak at the [guidelines](CONTRIBUTING.md).
+* If you're interested in contributing, start by taking a peak at the [guidelines](CONTRIBUTING.md).
 
 * For now, please cite as:
 
