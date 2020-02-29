@@ -50,11 +50,7 @@ cat(output, file = "gonio_output.prv")
 - `pttkey_file` is a `csv` which includes the PTT, hex, and DeployID of platforms of interest (only the PTT and hex are necessary)
 - `gfile`, in this case an example Goniometer log included in this repo.
 
-I’ve saved the output to `gonio_output.prv` here. It seems like there is some flexibility in the `prv` format and I’ve taken some liberties, mainly because I don’t entirely understand every part of the format. In my simulated `prv`, for each platform, all the messages from the Goniometer log are lumped under one satellite pass even if they occurred over many days. This isn’t realistic, but DAP Processor doesn’t seem to mind and satellite passes don’t mean anything in this use case anyway. In addition, real `prv` files include the Doppler Argos position. Obviously I don’t have one, so I just added a point near our field site. This is hardcoded (sorry) and so you might want to change it to something nearer your field site especially if you want to decode `FastGPS` positions (See issue [#4](https://github.com/williamcioffi/parsegonio/issues/4)). Edit line 11 of `parsegonio.R` to change the simulated Argos position.
-
-```r
-h6 <- " 34.716  283.328  0.000 401677432"
-```
+I’ve saved the output to `gonio_output.prv` here. It seems like there is some flexibility in the `prv` format and I’ve taken some liberties, mainly because I don’t entirely understand every part of the format. In my simulated `prv`, for each platform, all the messages from the Goniometer log are lumped under one satellite pass even if they occurred over many days. This isn’t realistic, but DAP Processor doesn’t seem to mind and satellite passes don’t mean anything in this use case anyway. In addition, real `prv` files include the Doppler Argos position. Obviously I don’t have one, so I just added a point near our field site. You can change add your own positions as strings with three decimal placers using the parameters `lon` and `lat`. The format appears to be 0-360 instead of -180 to +180 by the way. There is some more chitchat about all of this in [issue #4](https://github.com/williamcioffi/parsegonio/issues/4).
 
 Once you have the simulated prv output you can just drag it into DAP processor. It helps to have preloaded a workspace with wch files as well as DAP will use the tag settings during decoding, though you can still get something even without them.
 
@@ -73,7 +69,7 @@ The best solution is don’t use excel because it is a terrible `csv` editor. Bu
 ![](docs/images/savedhex.png)
 
 ## Creating a prv from the exported messages of a favorite platform
-I've included an example file `favorite_ptt_180754.xls` obtained by using the save messages option for a favorited platform. To create a `prv` file, first simply save it as a csv. The expected date format is `%d-%m-%y %H:%M:%S`. If you need to change it for some reason the crucial line is 186 in `parsegonio.r`. Then you can simply run something like and decode the prv as explained above.
+I've included an example file `favorite_ptt_180754.xls` obtained by using the save messages option for a favorited platform. To create a `prv` file, first simply save it as a csv. The expected date format is `%d-%m-%y %H:%M:%S` (this is currently hardcoded around line 186 if you have to change it). After saving a csv file you can simply run something like this and decode the prv as explained above:
 
 ```r
 gfile <- "favorite_ptt_180754.csv"
