@@ -23,7 +23,7 @@ Take a look at `testparsegonio.R `which includes a full working example to outpu
 
 ## Details
 
-We use the Goniometer in hyperterminal mode connected to a laptop and generating plain text log files. There is a formatted output for "favorite" platforms, but since there is a 16 platform limit I prefer to use the hyperterimal logs as `parsegonio` input (See issue [#1](https://github.com/williamcioffi/parsegonio/issues/1)).
+We use the Goniometer in hyperterminal mode connected to a laptop and generating plain text log files. There is a formatted output for "favorite" platforms which you get when you click save messages, but since there is a 16 platform limit I prefer to use the hyperterimal logs as `parsegonio` input. See [below](#creating-a-prv-from-the-exported-messages-of-a-favorite-platform) for instructions on using the \*.xls output of saved messages.
 
 Goniometer log output usually looks something like this:
 
@@ -72,3 +72,14 @@ The best solution is don’t use excel because it is a terrible `csv` editor. Bu
 
 ![](docs/images/savedhex.png)
 
+## Creating a prv from the exported messages of a favorite platform
+I've included an example file `favorite_ptt_180754.xls` obtained by using the save messages option for a favorited platform. To create a `prv` file, first simply save it as a csv. The expected date format is `%d-%m-%y %H:%M:%S`. If you need to change it for some reason the crucial line is 186 in `parsegonio.r`. Then you can simply run something like and decode the prv as explained above.
+
+```r
+gfile <- "favorite_ptt_180754.csv"
+ptt <- "180754"
+
+source("parsegonio.r")
+output <- parsegonio_favorite_messages(gfile, ptt)
+cat(output, file = "gonio_favorite_output.prv")
+```
