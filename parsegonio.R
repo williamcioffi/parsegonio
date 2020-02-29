@@ -1,6 +1,6 @@
 # parse the raw goniometer files
 
-parsegonio <- function(gfile, pttkey_file, dsa_output = TRUE) {
+parsegonio <- function(gfile, pttkey_file, prv_output = TRUE) {
 # constants for the fake prv file
 # header
 h1 <- "03126"
@@ -162,6 +162,64 @@ if(dsa_output) {
 }
 
 if(length(output) == 0) warning("i don't think you found any matching hex...")
+
+output
+}
+
+
+
+# use this one for a csv saved from the .xls output
+# favorited messages
+parsegonio_favorite_messages <- function(gfile, ptt) {
+# constants for the fake prv file
+# header
+h1 <- "03126"
+h2 <- ""	# this is the ptt
+h3 <- " 75 31 A 2"
+h4 <- ""	# this is the date
+h5 <- ""    # this is the time
+h6 <- " 34.716  283.328  0.000 401677432"
+
+g <- read.table(gfile, sep = ',', header = TRUE, stringsAsFactors = FALSE)
+
+# fix date format
+dates <- as.POSIXct(g$Date, tz = 'utc', format = '%d-%m-%y %H:%M:%S')
+dates <- paste(dates)
+
+header <- paste(h1, ptt, h3, dates[length(dates)], h6)
+msgs <- g$Data
+msgs <- as.character(msgs)
+msgs <- split(msgs, 1:length(msgs))
+
+# split up into bytes dropping first byte
+msgs <- lapply(msgs, function(l) {
+  lprime <- substring(l, seq(1, nchar(l), by = 2), seq(2, nchar(l), by = 2))
+  lprime[-1]
+})
+
+# convert from hex to decimal and add 1 leader zero
+msgs <- lapply(msgs, as.hexmode)
+msgs <- lapply(msgs, as.integer)
+msgs <- lapply(msgs, function(x) {
+  dese <- which(nchar(x) == 1)
+  x[dese] <- paste0("0", x[dese])
+  x
+})
+
+output <- paste0(header, "\n")
+
+for(p in 1:length(dates)) {
+  output <- paste0(output, dates[p], " 1")
+  curmsg <- msgs[[p]]
+  msgseq <- rep(1:ceiling(length(curmsg)/4), each = 4)
+  msgseq <- msgseq[1:length(curmsg)]
+  u_msgseq <- unique(msgseq)
+    
+  for(q in 1:length(u_msgseq)) {
+    dose <- which(msgseq == u_msgseq[q])
+    output <- paste0(output, "\t", paste(curmsg[dose], collapse = "\t"), "\n")
+  }
+}
 
 output
 }
