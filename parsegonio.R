@@ -107,7 +107,7 @@ desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
 # look for just those hex codes
 subg <- allg[which(allg$V9 %in% desehex), ]
 
-if(dsa_output) {
+if(prv_output) {
   # set up vectors to make dsa
   foundhexes <- unique(subg$V9)
   foundptts <- pttkey$PTT[match(foundhexes, pttkey$HEX)]
