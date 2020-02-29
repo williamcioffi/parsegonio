@@ -16,4 +16,4 @@ ptt <- "180754"
 
 source("parsegonio.r")
 output <- parsegonio_favorite_messages(gfile, ptt)
-cat(output, file = "gonio_favorites_output.prv")
+cat(output, file = "gonio_favorite_output.prv")
