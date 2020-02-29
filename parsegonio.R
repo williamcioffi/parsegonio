@@ -1,6 +1,6 @@
 # parse the raw goniometer files
 
-parsegonio <- function(gfile, pttkey_file, prv_output = TRUE) {
+parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', lat = '34.716') {
 # constants for the fake prv file
 # header
 h1 <- "03126"
@@ -8,7 +8,7 @@ h2 <- ""	# this is the ptt
 h3 <- " 75 31 A 2"
 h4 <- ""	# this is the date
 h5 <- ""    # this is the time
-h6 <- " 34.716  283.328  0.000 401677432"
+h6 <- paste0(" ", lat, "  ", lon, "  0.000 401677432")
 
 # footer
 f1 <- "" 	# this is the number of messages
@@ -107,7 +107,7 @@ desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
 # look for just those hex codes
 subg <- allg[which(allg$V9 %in% desehex), ]
 
-if(dsa_output) {
+if(prv_output) {
   # set up vectors to make dsa
   foundhexes <- unique(subg$V9)
   foundptts <- pttkey$PTT[match(foundhexes, pttkey$HEX)]
@@ -170,7 +170,7 @@ output
 
 # use this one for a csv saved from the .xls output
 # favorited messages
-parsegonio_favorite_messages <- function(gfile, ptt) {
+parsegonio_favorite_messages <- function(gfile, ptt, lon = '283.328', lat = '34.716') {
 # constants for the fake prv file
 # header
 h1 <- "03126"
@@ -178,7 +178,7 @@ h2 <- ""	# this is the ptt
 h3 <- " 75 31 A 2"
 h4 <- ""	# this is the date
 h5 <- ""    # this is the time
-h6 <- " 34.716  283.328  0.000 401677432"
+h6 <- paste0(" ", lat, "  ", lon, "  0.000 401677432")
 
 g <- read.table(gfile, sep = ',', header = TRUE, stringsAsFactors = FALSE)
 
