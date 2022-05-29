@@ -9,13 +9,13 @@
 
 * see below for a quick guide.
 
-* Report any bugs to the [issues](https://github.com/williamcioffi/parsegonio/issues) page. 
+* Report any bugs or questions to the [issues](https://github.com/williamcioffi/parsegonio/issues) page. 
 
 * If you're interested in contributing, start by taking a peak at the [guidelines](CONTRIBUTING.md).
 
 * For now, please cite as:
 
-Cioffi WR (2020). parsegonio: parse Argos Goniometer log data and convert into prv. R code version 0.1.0. https://github.com/williamcioffi/parsegonio. (doi:10.5281/zenodo.3647697).
+Cioffi WR (2020). parsegonio: parse Argos Goniometer log data and convert into prv. R code version 0.1.0. https://github.com/williamcioffi/parsegonio. (doi:10.5281/zenodo.3647696).
 
 ## Quick start
 

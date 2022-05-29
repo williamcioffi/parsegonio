@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: >-
+  parsegonio: parse Argos Goniometer log data and convert into prv
+message: >-
+  If you use this dataset or code, please cite it
+  using the metadata from this file. See README.md for a
+  suggested citation format.
+type: software
+authors:
+  - given-names: William R
+    family-names: Cioffi
+    email: wrc14@duke.edu
+    affiliation: >-
+      Duke University Marine Laboratory, Nicholas
+      School of the Environment, Duke University,
+      Beaufort, NC, U R. Cioffi https://orcid.org/SA
+    orcid: 'https://orcid.org/0000-0003-1182-8578'
+version: 0.1.0
+doi: 10.5281/zenodo.3647696
+url: https://github.com/williamcioffi/parsegonio
