@@ -23,7 +23,7 @@ Take a look at `testparsegonio.R `which includes a full working example to outpu
 
 ## Details
 
-We use the Goniometer in hyperterminal mode connected to a laptop and generating plain text log files. There is a formatted output for "favorite" platforms which you get when you click save messages, but since there is a 16 platform limit I prefer to use the hyperterimal logs as `parsegonio` input. See [below](#creating-a-prv-from-the-exported-messages-of-a-favorite-platform) for instructions on using the \*.xls output of saved messages.
+We use the Goniometer in hyperterminal mode connected to a laptop and generating plain text log files. There is a formatted output for "favorite" platforms which you get when you click save messages, but since there is a 16 platform limit I prefer to use the hyperterimal logs as `parsegonio` input. See [below](#creating-a-prv-from-the-exported-messages-of-a-favorite-platform) for instructions on using the \*.xls output of saved messages. Note this \*.xls output can also now be uploaded to the WC portal directly in some cases.
 
 Goniometer log output usually looks something like this:
 
