@@ -1,169 +1,203 @@
 # parse the raw goniometer files
 
-parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', lat = '34.716') {
-# constants for the fake prv file
-# header
-h1 <- "03126"
-h2 <- ""	# this is the ptt
-h3 <- " 75 31 A 2"
-h4 <- ""	# this is the date
-h5 <- ""    # this is the time
-h6 <- paste0(" ", lat, "  ", lon, "  0.000 401677432")
-
-# footer
-f1 <- "" 	# this is the number of messages
-f2 <- "msgs 000>-120dB  Best:  -126  Freq:  677432.3  IQ : 66" # first line
-f3 <- "Lat1: 34.716N  Lon1:  76.672W  Lat2: 34.716N  Lon2:  76.672W" # second line
-
-# read in raw goniometer file and separate the favorited NPRF from the NPR.
-g <- readLines(gfile)
-g_nprf <- g[grep("NPRF", g)]
-g_npr <- g[grep("NPR,", g)]
-
-# make new files out of these greped vectors
-if(length(g_nprf) == 0 & length(g_npr) == 0) stop("you didn't give me any goniometer messages!")
-
-allg <- data.frame(
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character(),
-character()
-)
-
-names(allg) <- paste0("V", 1:20)
-
-if(length(g_nprf) != 0) {
-	nprf_file <- tempfile()
-	writeLines(g_nprf, nprf_file)
-	nprf <- read.table(nprf_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
-	allg <- rbind(allg, nprf)
-}
-
-if(length(g_npr) != 0) {
-	npr_file <- tempfile()
-	writeLines(g_npr, npr_file)
-	npr <- read.table(npr_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
-	# add dummy columns for the saved average strength and average bearing columns for NPR (this only works on NPRF)
-	npr_withcols <- data.frame(npr[, 1:12], rep(NA, nrow(npr)), npr[, 13], rep(NA, nrow(npr)), npr[, 14:ncol(npr)])
-	names(npr_withcols) <- paste0("V", 1:20)
-	allg <- rbind(allg, npr_withcols)
-}
-
-if(nrow(allg) == 0) stop("i don't think you have anything to work with there...")
-
-# format date
-rec_date_tmp <- paste(
-	allg$V3, 				# this code might break in the year 3000?
-	sprintf("%02d", allg$V4), 
-	sprintf("%02d", allg$V5),
-	sep = '-'
-)
-
-rec_date_tmp <- as.character(as.POSIXct(rec_date_tmp, format = "%y-%m-%d", tz = "UTC"))
-
-rec_time_tmp <- paste(
-	sprintf("%02d", allg$V6), 
-	sprintf("%02d", allg$V7), 
-	sprintf("%02d", allg$V8),
-	sep = ":"
-)
-
-# final formatted date and time
-rec_date_formatted <- paste(rec_date_tmp, rec_time_tmp)
-allg$V1 <- rec_date_formatted
-
-# save back into the dataframe
-allg$V1 <- rec_date_formatted
-
-# separate the byte after the asterix
-msg <- as.character(allg$V20)
-msg_split <- strsplit(msg, "\\*")
-msg_formatted <- sapply(msg_split, '[[', 1)
-msg_asterix <- sapply(msg_split, '[[', 2)
-
-allg$V20 <- msg_formatted
-allg[, 'asterix'] <- msg_asterix
-
-# read in the pttkey
-pttkey <- read.table(pttkey_file, header = TRUE, sep = ',', stringsAsFactors = FALSE)
-desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
-
-# look for just those hex codes
-subg <- allg[which(allg$V9 %in% desehex), ]
-
-if(prv_output) {
-  # set up vectors to make dsa
-  foundhexes <- unique(subg$V9)
-  foundptts <- pttkey$PTT[match(foundhexes, pttkey$HEX)]
-  output <- ""
-  	
-  # go through each found hex and bundle up all the messages
-  pb <- txtProgressBar(style = 3)
-  for(i in 1:length(foundhexes)) {
-  setTxtProgressBar(pb, i/length(foundhexes))
-  	dese <- which(subg$V9 == foundhexes[i])
-  	header <- paste(h1, foundptts[i], h3, subg$V1[dese[1]], h6)
-  	
-  	date <- subg[dese, ]$V1
-  	msgs <- subg[dese, ]$V20
-  	msgs <- as.character(msgs)
-  	msgs <- split(msgs, 1:length(msgs))
-  	
-  	# split up into bytes dropping first byte
-  	msgs <- lapply(msgs, function(l) {
-  		lprime <- substring(l, seq(1, nchar(l), by = 2), seq(2, nchar(l), by = 2))
-  		lprime[-1]
-  	})
-  	
-  	# convert from hex to decimal and add 1 leader zero
-  	msgs <- lapply(msgs, as.hexmode)
-  	msgs <- lapply(msgs, as.integer)
-  	msgs <- lapply(msgs, function(l) {
-  		dese <- which(nchar(l) == 1)
-  		l[dese] <- paste0("0", l[dese])
-  		l
-  	})
-  	
-  	output <- paste0(output, header, "\n")
+parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', lat = '34.716', version = 1) {
+  # check to make sure version is specified correctly
+  if(version != 1 & version != 2)
+    stop("error: I only know about gonio version 1 or 2...")
   
-  	for(p in 1:length(dese)) {
-  		output <- paste0(output, date[p], " 1")
-  		curmsg <- msgs[[p]]
-  		msgseq <- rep(1:ceiling(length(curmsg)/4), each = 4)
-  		msgseq <- msgseq[1:length(curmsg)]
-  		u_msgseq <- unique(msgseq)
-  		
-  		for(q in 1:length(u_msgseq)) {
-  			dose <- which(msgseq == u_msgseq[q])
-  			output <- paste0(output, "\t", paste(curmsg[dose], collapse = "\t"), "\n")
-  		}
-  		
-  	}
+  # constants for the gonio file format
+  # these are after pasting npr and nprf and version 1 or 2 independent
+  # since they are invoked after the dataframes are rectified
+  YEAR_COL <- 3
+  MONTH_COL <- 4
+  DAY_COL <- 5
+  HOUR_COL <- 6
+  MIN_COL <- 7
+  SEC_COL <- 8
+  
+  HEX_COL <- 9
+  MSG_COL <- 20
+  
+  # one col longer for version 2
+  if(version == 2) MSG_COL <- 21
+  
+  # constants for the fake prv file
+  # header
+  h1 <- "03126"
+  h2 <- ""	# this is the ptt
+  h3 <- " 75 31 A 2"
+  h4 <- ""	# this is the date
+  h5 <- ""    # this is the time
+  h6 <- paste0(" ", lat, "  ", lon, "  0.000 401677432")
+  
+  # footer
+  f1 <- "" 	# this is the number of messages
+  f2 <- "msgs 000>-120dB  Best:  -126  Freq:  677432.3  IQ : 66" # first line
+  f3 <- "Lat1: 34.716N  Lon1:  76.672W  Lat2: 34.716N  Lon2:  76.672W" # second line
+  
+  # read in raw goniometer file and separate the favorited NPRF from the NPR.
+  g <- readLines(gfile)
+  g_nprf <- g[grep("NPRF", g)]
+  g_npr <- g[grep("NPR,", g)]
+  
+  # make new files out of these greped vectors
+  if(length(g_nprf) == 0 & length(g_npr) == 0) stop("you didn't give me any goniometer messages!")
+  
+  allg <- data.frame(
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character(),
+    character()
+  )
+  
+  # add a column for version 2 nprf has 1 more col
+  if(version == 2) {
+    allg <- cbind(allg, character())
   }
-  close(pb)
-} else {
-  output <- allg
-}
-
-if(length(output) == 0) warning("i don't think you found any matching hex...")
-
-output
+  
+  names(allg) <- paste0("V", 1:ncol(allg))
+  
+  if(length(g_nprf) != 0) {
+    nprf_file <- tempfile()
+    writeLines(g_nprf, nprf_file)
+    nprf <- read.table(nprf_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
+    allg <- rbind(allg, nprf)
+  }
+  
+  if(length(g_npr) != 0) {
+    npr_file <- tempfile()
+    writeLines(g_npr, npr_file)
+    npr <- read.table(npr_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
+    
+    # add dummy columns for the saved average strength and average bearing columns for NPR (this only works on NPRF)
+    if(version == 1) {
+      npr_withcols <- data.frame(npr[, 1:12], rep(NA, nrow(npr)), npr[, 13], rep(NA, nrow(npr)), npr[, 14:ncol(npr)])
+    } else if(version == 2) {
+      npr_withcols <- data.frame(npr[, 1], rep(NA, nrow(npr)), npr[, 2:11], rep(NA, nrow(npr)), rep(NA, nrow(npr)), npr[, 12], rep(NA, nrow(npr)), npr[, 13:15], npr[, 18:19])
+    }
+    
+    names(npr_withcols) <- paste0("V", 1:ncol(npr_withcols))
+    allg <- rbind(allg, npr_withcols)
+  }
+  
+  if(nrow(allg) == 0) stop("i don't think you have anything to work with there...")
+  
+  # name some useful cols for later
+  names(allg)[c(YEAR_COL, MONTH_COL, DAY_COL, HOUR_COL, MIN_COL, SEC_COL)] <- c("year", "month", "day", "hour", "min", "sec")
+  names(allg)[c(HEX_COL, MSG_COL)] <- c("hexid", "message")
+  
+  # format date
+  rec_date_tmp <- paste(
+    allg$year, 				# this code might break in the year 3000?
+    sprintf("%02d", allg$month), 
+    sprintf("%02d", allg$day),
+    sep = '-'
+  )
+  
+  rec_date_tmp <- as.character(as.POSIXct(rec_date_tmp, format = "%y-%m-%d", tz = "UTC"))
+  
+  rec_time_tmp <- paste(
+    sprintf("%02d", allg$hour), 
+    sprintf("%02d", allg$min), 
+    sprintf("%02d", allg$sec),
+    sep = ":"
+  )
+  
+  # final formatted date and time
+  rec_date_formatted <- paste(rec_date_tmp, rec_time_tmp)
+  
+  # save back into the dataframe
+  allg$date_formatted <- rec_date_formatted
+  
+  # separate the byte after the asterix
+  msg <- as.character(allg$message)
+  msg_split <- strsplit(msg, "\\*")
+  msg_formatted <- sapply(msg_split, '[[', 1)
+  msg_asterix <- sapply(msg_split, '[[', 2)
+  
+  allg$message <- msg_formatted
+  allg[, 'asterix'] <- msg_asterix
+  
+  # read in the pttkey
+  pttkey <- read.table(pttkey_file, header = TRUE, sep = ',', stringsAsFactors = FALSE)
+  desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
+  
+  # look for just those hex codes
+  subg <- allg[which(allg$hexid %in% desehex), ]
+  
+  if(prv_output) {
+    # set up vectors to make dsa
+    foundhexes <- unique(subg$hexid)
+    foundptts <- pttkey$PTT[match(foundhexes, pttkey$HEX)]
+    output <- ""
+    
+    # go through each found hex and bundle up all the messages
+    pb <- txtProgressBar(style = 3)
+    for(i in 1:length(foundhexes)) {
+      setTxtProgressBar(pb, i/length(foundhexes))
+      dese <- which(subg$hexid == foundhexes[i])
+      header <- paste(h1, foundptts[i], h3, subg$date_formatted[dese[1]], h6)
+      
+      date <- subg[dese, ]$date_formatted
+      msgs <- subg[dese, ]$message
+      msgs <- as.character(msgs)
+      msgs <- split(msgs, 1:length(msgs))
+      
+      # split up into bytes dropping first byte
+      msgs <- lapply(msgs, function(l) {
+        lprime <- substring(l, seq(1, nchar(l), by = 2), seq(2, nchar(l), by = 2))
+        lprime[-1]
+      })
+      
+      # convert from hex to decimal and add 1 leader zero
+      msgs <- lapply(msgs, as.hexmode)
+      msgs <- lapply(msgs, as.integer)
+      msgs <- lapply(msgs, function(l) {
+        dese <- which(nchar(l) == 1)
+        l[dese] <- paste0("0", l[dese])
+        l
+      })
+      
+      output <- paste0(output, header, "\n")
+      
+      for(p in 1:length(dese)) {
+        output <- paste0(output, date[p], " 1")
+        curmsg <- msgs[[p]]
+        msgseq <- rep(1:ceiling(length(curmsg)/4), each = 4)
+        msgseq <- msgseq[1:length(curmsg)]
+        u_msgseq <- unique(msgseq)
+        
+        for(q in 1:length(u_msgseq)) {
+          dose <- which(msgseq == u_msgseq[q])
+          output <- paste0(output, "\t", paste(curmsg[dose], collapse = "\t"), "\n")
+        }
+        
+      }
+    }
+    close(pb)
+  } else {
+    output <- allg
+  }
+  
+  if(length(output) == 0) warning("i don't think you found any matching hex...")
+  
+  output
 }
 
 
