@@ -1,3 +1,5 @@
+# beta test of gonio version 2 support
+
 # parsegonio
 [![DOI](https://zenodo.org/badge/122348759.svg)](https://zenodo.org/badge/latestdoi/122348759)
 
