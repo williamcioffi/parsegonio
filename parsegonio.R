@@ -135,7 +135,8 @@ parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', l
   allg[, 'asterix'] <- msg_asterix
   
   # read in the pttkey
-  pttkey <- read.table(pttkey_file, header = TRUE, sep = ',', stringsAsFactors = FALSE)
+  # make sure columns are character so the hex isn't mis-interpretated
+  pttkey <- read.table(pttkey_file, header = TRUE, sep = ',', stringsAsFactors = FALSE, colClasses = "character")
   desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
   
   # look for just those hex codes
