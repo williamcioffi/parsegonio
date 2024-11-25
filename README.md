@@ -41,16 +41,17 @@ You can use `parsegonio` to create a simulated prv file that DAP processor can r
 
 ```r
 gfile <- "gonio_ex_log.txt"
-pttkey_file <- "pttkey.csv"
+pttkey <- data.frame(PTT = "171165", HEX = "0A1FBD4", DEPLOYID = "TEST1")
 
 source("parsegonio.r")
-output <- parsegonio(gfile, pttkey_file)
+output <- parsegonio(gfile, pttkey, version = 1)
 cat(output, file = "gonio_output.prv")
 ```
 
-`parsegonio` takes two parameters: 
-- `pttkey_file` is a `csv` which includes the PTT, hex, and DeployID of platforms of interest (only the PTT and hex are necessary)
+`parsegonio` takes three key parameters: 
+- `pttkey` is a `data.table` which includes the `PTT`, `HEX`, and `DEPLOYID` of platforms of interest (only the PTT and hex are necessary). `HEX` column needs to be character.
 - `gfile`, in this case an example Goniometer log included in this repo.
+- `version` to indicate version 1 or version 2 goniometer
 
 I’ve saved the output to `gonio_output.prv` here. It seems like there is some flexibility in the `prv` format and I’ve taken some liberties, mainly because I don’t entirely understand every part of the format. In my simulated `prv`, for each platform, all the messages from the Goniometer log are lumped under one satellite pass even if they occurred over many days. This isn’t realistic, but DAP Processor doesn’t seem to mind and satellite passes don’t mean anything in this use case anyway. In addition, real `prv` files include the Doppler Argos position. Obviously I don’t have one, so I just added a point near our field site. You can change add your own positions as strings with three decimal placers using the parameters `lon` and `lat`. The format appears to be 0-360 instead of -180 to +180 by the way. There is some more chitchat about all of this in [issue #4](https://github.com/williamcioffi/parsegonio/issues/4).
 
