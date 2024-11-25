@@ -40,7 +40,9 @@ parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', l
   # make new files out of these greped vectors
   if(length(g_nprf) == 0 & length(g_npr) == 0) stop("you didn't give me any goniometer messages!")
   
+  # version 2 has 21 cols so we'll accomodate that no mater what
   allg <- data.frame(
+    character(),
     character(),
     character(),
     character(),
@@ -63,10 +65,6 @@ parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', l
     character()
   )
   
-  # add a column for version 2 nprf has 1 more col
-  if(version == 2) {
-    allg <- cbind(allg, character())
-  }
   
   names(allg) <- paste0("V", 1:ncol(allg))
   
@@ -74,6 +72,13 @@ parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', l
     nprf_file <- tempfile()
     writeLines(g_nprf, nprf_file)
     nprf <- read.table(nprf_file, header = FALSE, sep = ',', stringsAsFactors = FALSE)
+    
+    # add the extra column after 13 for version 1
+    if(version == 1) {
+      nprf <- data.frame(nprf[, 1:13], rep(NA, nrow(nprf)), nprf[, 14:ncol(nprf)])
+      names(nprf) <- paste0("V", 1:ncol(nprf))
+    }
+    
     allg <- rbind(allg, nprf)
   }
   
