@@ -16,10 +16,7 @@ parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', l
   SEC_COL <- 8
   
   HEX_COL <- 9
-  MSG_COL <- 20
-  
-  # one col longer for version 2
-  if(version == 2) MSG_COL <- 21
+  MSG_COL <- 21
   
   # constants for the fake prv file
   # header
@@ -87,7 +84,7 @@ parsegonio <- function(gfile, pttkey_file, prv_output = TRUE, lon = '283.328', l
     
     # add dummy columns for the saved average strength and average bearing columns for NPR (this only works on NPRF)
     if(version == 1) {
-      npr_withcols <- data.frame(npr[, 1:12], rep(NA, nrow(npr)), npr[, 13], rep(NA, nrow(npr)), npr[, 14:ncol(npr)])
+      npr_withcols <- data.frame(npr[, 1:12], rep(NA, nrow(npr)), rep(NA, nrow(npr)), npr[, 13], rep(NA, nrow(npr)), npr[, 14:ncol(npr)])
     } else if(version == 2) {
       npr_withcols <- data.frame(npr[, 1], rep(NA, nrow(npr)), npr[, 2:11], rep(NA, nrow(npr)), rep(NA, nrow(npr)), npr[, 12], rep(NA, nrow(npr)), npr[, 13:15], npr[, 18:19])
     }
