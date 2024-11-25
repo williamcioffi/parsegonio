@@ -3,10 +3,10 @@
 parsegonio <- function(gfile, pttkey, prv_output = TRUE, lon = '283.328', lat = '34.716', version = 1) {
   # check to make sure version is specified correctly
   if(version != 1 & version != 2)
-    stop("parsegonio: error: I only know about gonio version 1 or 2...")
+    stop("parsegonio: I only know about gonio version 1 or 2...")
   
   if(class(pttkey$HEX) != "character")
-    stop("parsegonio: error: make sure HEX is a character")
+    stop("parsegonio: make sure HEX is a character")
   
   # constants for the gonio file format
   # these are after pasting npr and nprf and version 1 or 2 independent
@@ -41,7 +41,7 @@ parsegonio <- function(gfile, pttkey, prv_output = TRUE, lon = '283.328', lat = 
   g_npr <- g[grep("NPR,", g)]
   
   # make new files out of these greped vectors
-  if(length(g_nprf) == 0 & length(g_npr) == 0) stop("you didn't give me any goniometer messages!")
+  if(length(g_nprf) == 0 & length(g_npr) == 0) stop("parsegonio: you didn't give me any goniometer messages!")
   
   # version 2 has 21 cols so we'll accomodate that no mater what
   allg <- data.frame(
@@ -101,7 +101,7 @@ parsegonio <- function(gfile, pttkey, prv_output = TRUE, lon = '283.328', lat = 
     allg <- rbind(allg, npr_withcols)
   }
   
-  if(nrow(allg) == 0) stop("i don't think you have anything to work with there...")
+  if(nrow(allg) == 0) stop("parsegonio#104: allg is empty...")
   
   # name some useful cols for later
   names(allg)[c(YEAR_COL, MONTH_COL, DAY_COL, HOUR_COL, MIN_COL, SEC_COL)] <- c("year", "month", "day", "hour", "min", "sec")
