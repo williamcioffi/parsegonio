@@ -5,7 +5,21 @@ gfile <- "gonio_ex_log.txt"
 pttkey_file <- "pttkey.csv"
 
 source("parsegonio.R")
-output <- parsegonio(gfile, pttkey_file)
+
+# load in pttkey_file
+pttkey <- read.table(pttkey_file, 
+  header = TRUE,
+  sep = ',', 
+  stringsAsFactors = FALSE, 
+  colClasses = "character" # make sure hex is interpreted as char
+)
+
+# filter out hexes which don't have a deployid
+desehex <- pttkey$HEX[which(pttkey$DEPLOYID != "")]
+
+
+output <- parsegonio(gfile, pttkey, version = 1)
+output_table <- parsegonio(gfile, pttkey, prv_output = FALSE, version = 1)
 cat(output, file = "gonio_output.prv")
 
 # if you are using an exported xls messages from a favorite
