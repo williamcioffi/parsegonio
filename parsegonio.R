@@ -193,7 +193,7 @@ parsegonio <- function(gfile, pttkey, prv_output = TRUE, lon = '283.328', lat = 
     }
     close(pb)
   } else {
-    output <- allg
+    output <- subg
   }
   
   if(length(output) == 0) warning("i don't think you found any matching hex...")
